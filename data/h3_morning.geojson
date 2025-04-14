@@ -39,7 +39,6 @@
         ]]
       }
     },
-
     {
       "type": "Feature",
       "properties": {
@@ -78,7 +77,6 @@
         ]]
       }
     },
-
     {
       "type": "Feature",
       "properties": {
@@ -100,3 +98,4 @@
     }
   ]
 }
+
