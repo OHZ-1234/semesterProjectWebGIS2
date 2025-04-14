@@ -63,3 +63,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (val === 'evening') loadLayer('data/h3_evening.geojson', 'evening_score');
   });
 });
+
+// 加载 Apartments 图层
+fetch("data/Apartments.geojson")
+  .then(response => response.json())
+  .then(data => {
+    L.geoJSON(data, {
+      pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius: 5,
+          fillColor: "#ff7800",
+          color: "#000",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        });
+      },
+      onEachFeature: function (feature, layer) {
+        layer.bindPopup("Apartment: " + (feature.properties.name || "Unnamed"));
+      }
+    }).addTo(map);
+  });
+
