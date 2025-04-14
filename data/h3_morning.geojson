@@ -1,101 +1,42 @@
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "h3_index": "892830828b7ffff",
-        "morning_score": 13
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-96.336134, 30.615292],
-          [-96.335753, 30.616051],
-          [-96.334990, 30.616052],
-          [-96.334608, 30.615292],
-          [-96.334990, 30.614533],
-          [-96.335753, 30.614532],
-          [-96.336134, 30.615292]
-        ]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "h3_index": "8928308289bffff",
-        "morning_score": 26
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-96.337513, 30.615292],
-          [-96.337132, 30.616051],
-          [-96.336369, 30.616052],
-          [-96.335987, 30.615292],
-          [-96.336369, 30.614533],
-          [-96.337132, 30.614532],
-          [-96.337513, 30.615292]
-        ]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "h3_index": "892830828d7ffff",
-        "morning_score": 39
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-96.338892, 30.615292],
-          [-96.338511, 30.616051],
-          [-96.337748, 30.616052],
-          [-96.337366, 30.615292],
-          [-96.337748, 30.614533],
-          [-96.338511, 30.614532],
-          [-96.338892, 30.615292]
-        ]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "h3_index": "8928308288fffff",
-        "morning_score": 52
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-96.340271, 30.615292],
-          [-96.339890, 30.616051],
-          [-96.339127, 30.616052],
-          [-96.338745, 30.615292],
-          [-96.339127, 30.614533],
-          [-96.339890, 30.614532],
-          [-96.340271, 30.615292]
-        ]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "h3_index": "89283082887ffff",
-        "morning_score": 78
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[
-          [-96.341650, 30.615292],
-          [-96.341269, 30.616051],
-          [-96.340506, 30.616052],
-          [-96.340124, 30.615292],
-          [-96.340506, 30.614533],
-          [-96.341269, 30.614532],
-          [-96.341650, 30.615292]
-        ]]
-      }
-    }
-  ]
-}
+pip install h3 geojson
+import h3
+import geojson
 
+# 设置目标区域：College Station 边界范围（大致）
+min_lat, max_lat = 30.57, 30.685
+min_lng, max_lng = -96.42, -96.285
+resolution = 9  # H3 分辨率
+
+# 生成 H3 六边形索引集合
+hexes = set()
+lat = min_lat
+while lat < max_lat:
+    lng = min_lng
+    while lng < max_lng:
+        h = h3.geo_to_h3(lat, lng, resolution)
+        hexes.add(h)
+        lng += 0.002  # 控制密度
+    lat += 0.002
+
+# 构建 GeoJSON 对象
+features = []
+for i, h in enumerate(hexes):
+    boundary = h3.h3_to_geo_boundary(h, geo_json=True)
+    if boundary[0] != boundary[-1]:
+        boundary.append(boundary[0])
+    polygon = geojson.Polygon([boundary])
+    feature = geojson.Feature(
+        geometry=polygon,
+        properties={
+            "h3_index": h,
+            "morning_score": (i * 17) % 100  # 模拟的交通评分，可自定义
+        }
+    )
+    features.append(feature)
+
+# 导出为 geojson 文件
+feature_collection = geojson.FeatureCollection(features)
+with open("h3_morning.geojson", "w") as f:
+    geojson.dump(feature_collection, f)
+
+print(f"✅ 生成完成，共计六边形数量：{len(features)}，已保存为 h3_morning.geojson")
