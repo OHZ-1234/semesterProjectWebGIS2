@@ -1,3 +1,4 @@
+// 初始化地图视图
 var map = L.map('map').setView([30.615, -96.33], 13);
 
 // 加载底图
@@ -6,7 +7,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// 样式生成函数（用于三个时段）
+// 热力图样式函数
 function getStyle(val) {
   let color = '#FFEDA0';
   if (val > 30) color = '#FEB24C';
@@ -21,7 +22,7 @@ function getStyle(val) {
   };
 }
 
-// 加载图层函数（给定 URL 和 属性字段）
+// 加载六边形图层函数（根据时段字段）
 function loadLayer(url, valueKey) {
   fetch(url)
     .then(res => res.json())
@@ -36,10 +37,10 @@ function loadLayer(url, valueKey) {
     });
 }
 
-// 默认加载早高峰
+// 默认加载早高峰图层
 loadLayer('data/h3_morning.geojson', 'morning_score');
 
-// 创建切换控件
+// 创建图层切换下拉菜单
 var control = L.control({position: 'topright'});
 control.onAdd = function() {
   let div = L.DomUtil.create('div', 'info');
@@ -54,7 +55,7 @@ control.onAdd = function() {
 };
 control.addTo(map);
 
-// 响应选择切换图层
+// 切换时段逻辑
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('timeSelector').addEventListener('change', function(e) {
     const val = e.target.value;
@@ -64,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// 加载 Apartments 图层
+// 加载公寓点图层
 fetch("data/Apartments.geojson")
   .then(response => response.json())
   .then(data => {
@@ -72,16 +73,16 @@ fetch("data/Apartments.geojson")
       pointToLayer: function (feature, latlng) {
         return L.circleMarker(latlng, {
           radius: 5,
-          fillColor: "#ff7800",
+          fillColor: "#FF5733",
           color: "#000",
           weight: 1,
           opacity: 1,
-          fillOpacity: 0.8
+          fillOpacity: 0.85
         });
       },
       onEachFeature: function (feature, layer) {
-        layer.bindPopup("Apartment: " + (feature.properties.name || "Unnamed"));
+        const name = feature.properties.name || "Unnamed apartment";
+        layer.bindPopup(`<b>Apartment:</b> ${name}`);
       }
     }).addTo(map);
   });
-
